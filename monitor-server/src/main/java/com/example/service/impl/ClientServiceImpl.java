@@ -2,10 +2,15 @@ package com.example.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.entity.dto.Client;
+import com.example.entity.dto.ClientDetail;
+import com.example.entity.vo.request.ClientDetailVO;
+import com.example.mapper.ClientDetailMapper;
 import com.example.mapper.ClientMapper;
 import com.example.service.ClientService;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -14,6 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class ClientServiceImpl extends ServiceImpl<ClientMapper, Client> implements ClientService {
+
+    @Resource
+    ClientDetailMapper detailMapper;
 
     private String registerToken = this.generateNewToken(); //服务端 service 保存的token
 
@@ -64,7 +72,20 @@ public class ClientServiceImpl extends ServiceImpl<ClientMapper, Client> impleme
     public Client findClientByToken(String token) {
         return clientTokenCache.get(token);
     }
-//随机生成token
+
+    @Override
+    public void updateClientDetail(ClientDetailVO vo, Client client) {
+        ClientDetail detail = new ClientDetail();
+        BeanUtils.copyProperties(vo, detail);//将从客户端传过来的vo 里面的除了id以外的复制给detail
+        detail.setId(client.getId());
+        if(Objects.nonNull(detailMapper.selectById(detail.getId()))) {
+            detailMapper.updateById(detail);
+        }else  {
+            detailMapper.insert(detail);
+        }
+    }
+
+    //随机生成token
     private String generateNewToken() {
         String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         SecureRandom random = new SecureRandom();

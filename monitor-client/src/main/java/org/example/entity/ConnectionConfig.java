@@ -9,5 +9,4 @@ public class ConnectionConfig {
     String address;
     String token;
 
-
 }

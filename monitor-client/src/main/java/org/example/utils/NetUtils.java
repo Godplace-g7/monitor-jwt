@@ -3,6 +3,7 @@ package org.example.utils;
 import com.alibaba.fastjson2.JSONObject;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.example.entity.BaseDetail;
 import org.example.entity.ConnectionConfig;
 import org.example.entity.Response;
 import org.springframework.context.annotation.Lazy;
@@ -22,6 +23,7 @@ public class NetUtils {
     @Resource
     ConnectionConfig config;
 
+//向服务端发送注册请求
     public boolean registerToServer(String address, String token) {
         log.info("正在向服务端注册，请稍后...");
         Response response = this.doGet("/register", address, token);
@@ -37,9 +39,7 @@ public class NetUtils {
         return this.doGet(url, config.getAddress(), config.getToken());
     }
 
-    private Response doGet(String url, String address, String token) {
-        String fullUrl = url+address+token;
-        String fullUrl1 = address + "/monitor" + url;
+    private Response doGet(String url, String address, String token) {   //get一般仅发送请求
         try {
             HttpRequest request = HttpRequest.newBuilder().GET()
                     .uri(new URI(address + "/monitor" + url))
@@ -55,11 +55,11 @@ public class NetUtils {
     }
 
 
-    private Response doPost(String url, Object data) {
+    private Response doPost(String url, Object data) {          //post中data即要发送的数据
         try {
-            String rawData = JSONObject.from(data).toJSONString();
-            HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(rawData))
-                    .uri(new URI(config.getAddress() + "/monitor" + url))
+            String rawData = JSONObject.from(data).toJSONString(); //一般发送json文本的数据
+            HttpRequest request = HttpRequest.newBuilder().POST(HttpRequest.BodyPublishers.ofString(rawData))//将json数据转换为字符串
+                    .uri(new URI(config.getAddress() + "/monitor" + url)) //存放在日志中的config 下次要用直接从config/server中读取出来
                     .header("Authorization", config.getToken())
                     .header("Content-Type", "application/json")
                     .build();
@@ -68,6 +68,15 @@ public class NetUtils {
         } catch (Exception e) {
             log.error("在发起服务端请求时出现问题", e);
             return Response.errorResponse(e);
+        }
+    }
+
+    public void updateBaseDetails(BaseDetail detail) {
+        Response response = this.doPost("/detail", detail);
+        if(response.success()) {
+            log.info("系统基本信息已更新完成");
+        } else {
+            log.error("系统基本信息更新失败: {}", response.message());
         }
     }
 }

@@ -4,10 +4,14 @@ import com.alibaba.fastjson2.JSONObject;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.ConnectionConfig;
+import org.example.utils.MonitorUtils;
 import org.example.utils.NetUtils;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.management.monitor.Monitor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -17,12 +21,21 @@ import java.util.Scanner;
 
 @Slf4j
 @Configuration
-public class ServerConfiguration {
+public class ServerConfiguration implements ApplicationRunner {
 
     @Resource
     NetUtils net;
 
+    @Resource
+    MonitorUtils monitor;
     //先调用链接接口同时调用读取文件接口 检查是否注册 没有注册调用注册接口，再调用保存文件接口
+
+
+    @Override
+    public void run(ApplicationArguments args) {
+        log.info("正在向服务端更新基本系统信息...");
+        net.updateBaseDetails(monitor.monitorBaseDetail());
+    }
 
     @Bean
     ConnectionConfig connectionConfig() {
