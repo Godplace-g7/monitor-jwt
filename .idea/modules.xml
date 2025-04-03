@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/moniter-jwt.iml" filepath="$PROJECT_DIR$/moniter-jwt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/monitor-web/monitor-web.iml" filepath="$PROJECT_DIR$/monitor-web/monitor-web.iml" />
     </modules>
   </component>
 </project>

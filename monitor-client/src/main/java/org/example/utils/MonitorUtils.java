@@ -2,8 +2,11 @@ package org.example.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.BaseDetail;
+import org.example.entity.RuntimeDetail;
 import org.springframework.stereotype.Component;
 import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.hardware.HWDiskStore;
 import oshi.hardware.HardwareAbstractionLayer;
 import oshi.hardware.NetworkIF;
 import oshi.software.os.OperatingSystem;
@@ -11,6 +14,7 @@ import oshi.software.os.OperatingSystem;
 import java.io.File;
 import java.net.NetworkInterface;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -41,7 +45,66 @@ public class MonitorUtils {
     }
 
 
+    public RuntimeDetail monitorRuntimeDetail() {
+        double statisticTime = 0.5; //定义一个统计时间 统计这段时间的相关数据
+        try {
+            HardwareAbstractionLayer hardware = info.getHardware(); //返回系统硬件信息
+            NetworkIF networkInterface = Objects.requireNonNull(this.findNetworkInterface(hardware));
+            CentralProcessor processor = hardware.getProcessor();//获取中央处理器
+            double upload = networkInterface.getBytesSent(), download = networkInterface.getBytesRecv();//获取当前已经发送，已经接受的数量数据
+            double read = hardware.getDiskStores().stream().mapToLong(HWDiskStore::getReadBytes).sum();//将所有的硬盘读取量集中到一起
+            double write = hardware.getDiskStores().stream().mapToLong(HWDiskStore::getWriteBytes).sum();//将所有的硬盘写入量集中到一起
+            long[] ticks = processor.getSystemCpuLoadTicks();//获取cpu 的各项指标
 
+            Thread.sleep((long) (statisticTime * 1000));//休眠1s
+
+            networkInterface = Objects.requireNonNull(this.findNetworkInterface(hardware));
+            upload = (networkInterface.getBytesSent() - upload) / statisticTime; //统计0.5秒内下载上传速度 xxByte/s
+            download =  (networkInterface.getBytesRecv() - download) / statisticTime;
+            read = (hardware.getDiskStores().stream().mapToLong(HWDiskStore::getReadBytes).sum() - read) / statisticTime;
+            write = (hardware.getDiskStores().stream().mapToLong(HWDiskStore::getWriteBytes).sum() - write) / statisticTime;
+
+            double memory = (hardware.getMemory().getTotal() - hardware.getMemory().getAvailable()) / 1024.0 / 1024 / 1024;//总量减去当前可用的
+            double disk = Arrays.stream(File.listRoots())
+                    .mapToLong(file -> file.getTotalSpace() - file.getFreeSpace()).sum() / 1024.0 / 1024 / 1024;
+
+            return new RuntimeDetail()
+                    .setCpuUsage(this.calculateCpuUsage(processor, ticks)) //设置cpu指标
+                    .setMemoryUsage(memory)
+                    .setDiskUsage(disk)
+                    .setNetworkUpload(upload / 1024)
+                    .setNetworkDownload(download / 1024)
+                    .setDiskRead(read / 1024/ 1024)
+                    .setDiskWrite(write / 1024 / 1024)
+                    .setTimestamp(new Date().getTime());
+        } catch (Exception e) {
+            log.error("读取运行时数据出现问题", e);
+        }
+        return null;
+    }
+
+//获取cpu各项指标的方法
+private double calculateCpuUsage(CentralProcessor processor, long[] prevTicks) {
+    long[] ticks = processor.getSystemCpuLoadTicks();
+    long nice = ticks[CentralProcessor.TickType.NICE.getIndex()]
+            - prevTicks[CentralProcessor.TickType.NICE.getIndex()];
+    long irq = ticks[CentralProcessor.TickType.IRQ.getIndex()]
+            - prevTicks[CentralProcessor.TickType.IRQ.getIndex()];
+    long softIrq = ticks[CentralProcessor.TickType.SOFTIRQ.getIndex()]
+            - prevTicks[CentralProcessor.TickType.SOFTIRQ.getIndex()];
+    long steal = ticks[CentralProcessor.TickType.STEAL.getIndex()]
+            - prevTicks[CentralProcessor.TickType.STEAL.getIndex()];
+    long cSys = ticks[CentralProcessor.TickType.SYSTEM.getIndex()]
+            - prevTicks[CentralProcessor.TickType.SYSTEM.getIndex()];
+    long cUser = ticks[CentralProcessor.TickType.USER.getIndex()]
+            - prevTicks[CentralProcessor.TickType.USER.getIndex()];
+    long ioWait = ticks[CentralProcessor.TickType.IOWAIT.getIndex()]
+            - prevTicks[CentralProcessor.TickType.IOWAIT.getIndex()];
+    long idle = ticks[CentralProcessor.TickType.IDLE.getIndex()]
+            - prevTicks[CentralProcessor.TickType.IDLE.getIndex()];
+    long totalCpu = cUser + nice + cSys + idle + ioWait + irq + softIrq + steal;
+    return (cSys + cUser) * 1.0 / totalCpu;
+}
 /*    //读取网卡
     private NetworkIF findNetworkInterface(HardwareAbstractionLayer hardware) {
         try {
