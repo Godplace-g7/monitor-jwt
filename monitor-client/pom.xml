@@ -55,6 +55,10 @@
             <artifactId>oshi-core</artifactId>
             <version>6.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId> <!--定时任务框架-->
+        </dependency>
     </dependencies>
 
     <build>

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.entity.dto.Client;
 import com.example.entity.dto.ClientDetail;
 import com.example.entity.vo.request.ClientDetailVO;
+import com.example.entity.vo.request.RuntimeDetailVO;
 import com.example.mapper.ClientDetailMapper;
 import com.example.mapper.ClientMapper;
 import com.example.service.ClientService;
@@ -83,6 +84,13 @@ public class ClientServiceImpl extends ServiceImpl<ClientMapper, Client> impleme
         }else  {
             detailMapper.insert(detail);
         }
+    }
+
+    private final Map<Integer, RuntimeDetailVO> currentRuntime = new ConcurrentHashMap<>();//用于存放最新的服务器运行监控数据
+
+    @Override
+    public void updateRuntimeDetail(RuntimeDetailVO vo, Client client) {
+        currentRuntime.put(client.getId(), vo);//将RuntimeDetailVO运行的数据存放到对应的服务器id里面去 用map存放
     }
 
     //随机生成token

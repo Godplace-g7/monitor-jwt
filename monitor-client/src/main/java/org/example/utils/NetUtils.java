@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.BaseDetail;
 import org.example.entity.ConnectionConfig;
 import org.example.entity.Response;
+import org.example.entity.RuntimeDetail;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +78,13 @@ public class NetUtils {
             log.info("系统基本信息已更新完成");
         } else {
             log.error("系统基本信息更新失败: {}", response.message());
+        }
+    }
+
+    public void updateRuntimeDetails(RuntimeDetail detail) {
+        Response response = this.doPost("/runtime", detail);
+        if(!response.success()) {
+            log.warn("更新运行时状态时，接收到服务端的异常响应内容: {}", response.message());
         }
     }
 }

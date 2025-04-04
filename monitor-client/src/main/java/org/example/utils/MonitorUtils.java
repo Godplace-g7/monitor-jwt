@@ -135,13 +135,13 @@ private double calculateCpuUsage(CentralProcessor processor, long[] prevTicks) {
                     continue;
                 }
 
-                log.info("当前网卡: name={}, up={}, virtual={}, loopback={}, p2p={}",
+              /*  log.info("当前网卡: name={}, up={}, virtual={}, loopback={}, p2p={}",
                         ni.getName(),
                         ni.isUp(),
                         ni.isVirtual(),
                         ni.isLoopback(),
                         ni.isPointToPoint()
-                );
+                );*/
 
                 // 打印调试信息
                 log.debug("检测网卡: name={}, virtual={}, p2p={}, ipv4={}",

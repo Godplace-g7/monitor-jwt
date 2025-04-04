@@ -44,7 +44,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(url.startsWith("/monitor")){
             if(!url.endsWith("/register")){
                 Client client = clientService.findClientByToken(authorization);
-                System.out.println(client);
                 if(client == null){
                     response.setStatus(401);
                     response.getWriter().write(RestBean.failure(401,"weizhuce").asJsonString());
