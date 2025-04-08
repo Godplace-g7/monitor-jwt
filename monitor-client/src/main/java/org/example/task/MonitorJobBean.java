@@ -21,7 +21,7 @@ public class MonitorJobBean extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-        RuntimeDetail runtimeDetail = monitor.monitorRuntimeDetail();
-        net.updateRuntimeDetails(runtimeDetail);
+        RuntimeDetail runtimeDetail = monitor.monitorRuntimeDetail();//获取到当前系统的相关运行状态信息
+        net.updateRuntimeDetails(runtimeDetail);//发送给服务端
     }
 }

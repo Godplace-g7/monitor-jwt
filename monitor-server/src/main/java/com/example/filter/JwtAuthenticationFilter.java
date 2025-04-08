@@ -46,7 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Client client = clientService.findClientByToken(authorization);
                 if(client == null){
                     response.setStatus(401);
-                    response.getWriter().write(RestBean.failure(401,"weizhuce").asJsonString());
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(RestBean.failure(401,"未注册").asJsonString());
                     return;
                 }else{
                     request.setAttribute(Const.ATTR_Client, client);  //设置的是Client client = new Client(id , "未命名主机" , token , new Date());

@@ -11,7 +11,6 @@ import com.example.service.AccountService;
 import com.example.utils.Const;
 import com.example.utils.FlowUtils;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -200,5 +199,17 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
      */
     private boolean existsAccountByUsername(String username){
         return this.baseMapper.exists(Wrappers.<Account>query().eq("username", username));
+    }
+
+    //改密码接口实现
+    @Override
+    public boolean changePassword(int id, String oldPass, String newPass) {
+        Account account = this.getById(id);
+        String password = account.getPassword();
+        if(!passwordEncoder.matches(oldPass, password))
+            return false;
+        this.update(Wrappers.<Account>update().eq("id", id)
+                .set("password", passwordEncoder.encode(newPass)));
+        return true;
     }
 }

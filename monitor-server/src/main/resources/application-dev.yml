@@ -4,6 +4,10 @@ springdoc:
   swagger-ui:
     operations-sorter: alpha
 spring:
+  influx:
+    url: http://localhost:8086
+    user: admin
+    password: 12345678
   mail:
     host: smtp.163.com
     username: 18398098163@163.com
@@ -32,8 +36,8 @@ spring:
     verify:
       mail-limit: 60
     flow:
-      period: 3
-      limit: 50
+      period: 5
+      limit: 100
       block: 30
     cors:
       origin: '*'
