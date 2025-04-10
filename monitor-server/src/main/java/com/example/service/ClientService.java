@@ -8,6 +8,7 @@ import com.example.entity.vo.request.RenameNodeVO;
 import com.example.entity.vo.request.RuntimeDetailVO;
 import com.example.entity.vo.response.ClientDetailsVO;
 import com.example.entity.vo.response.ClientPreviewVO;
+import com.example.entity.vo.response.ClientSimpleVO;
 import com.example.entity.vo.response.RuntimeHistoryVO;
 
 import java.util.List;
@@ -34,4 +35,7 @@ public interface ClientService {
     RuntimeDetailVO clientRuntimeDetailsNow(int clientId);
 
     void deleteClient(int clientId);
+
+    //获取一些基本信息 发给前端
+    List<ClientSimpleVO> listSimpleList();
 }

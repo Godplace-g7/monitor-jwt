@@ -1,11 +1,11 @@
 package com.example.service.impl;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.entity.dto.Account;
-import com.example.entity.vo.request.ConfirmResetVO;
-import com.example.entity.vo.request.EmailRegisterVO;
-import com.example.entity.vo.request.EmailResetVO;
+import com.example.entity.vo.request.*;
+import com.example.entity.vo.response.SubAccountVO;
 import com.example.mapper.AccountMapper;
 import com.example.service.AccountService;
 import com.example.utils.Const;
@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -101,7 +102,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         if(this.existsAccountByUsername(username)) return "该用户名已被他人使用，请重新更换";
         String password = passwordEncoder.encode(info.getPassword());
         Account account = new Account(null, info.getUsername(),
-                password, email, Const.ROLE_DEFAULT, new Date());
+                password, email, Const.ROLE_ADMIN, new Date(), "admin");
         if(!this.save(account)) {
             return "内部错误，注册失败";
         } else {
@@ -211,5 +212,53 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         this.update(Wrappers.<Account>update().eq("id", id)
                 .set("password", passwordEncoder.encode(newPass)));
         return true;
+    }
+
+    //创建子用户
+    @Override
+    public void createSubAccount(CreateSubAccountVO vo) {
+        Account account = this.findAccountByNameOrEmail(vo.getEmail());
+        if(account != null)
+            throw new IllegalArgumentException("该电子邮件已被注册");
+        account = this.findAccountByNameOrEmail(vo.getUsername());
+        if(account != null)
+            throw new IllegalArgumentException("该用户名已被注册");
+        account = new Account(null, vo.getUsername(), passwordEncoder.encode(vo.getPassword()),
+                vo.getEmail(), Const.ROLE_NORMAL, new Date(), JSONArray.copyOf(vo.getClients()).toJSONString());
+        this.save(account);
+    }
+
+    //删除子用户
+    @Override
+    public void deleteSubAccount(int uid) {
+        this.removeById(uid);
+
+    }
+
+    //查询子用户
+    @Override
+    public List<SubAccountVO> listSubAccount() {
+        return this.list(Wrappers.<Account>query().eq("role", Const.ROLE_NORMAL))
+                .stream().map(account -> {
+                    SubAccountVO vo = account.asViewObject(SubAccountVO.class);
+                    vo.setClientList(JSONArray.parse(account.getClients()));
+                    return vo;
+                }).toList();
+    }
+
+//更改邮件操作
+@Override
+public String modifyEmail(int id, ModifyEmailVO vo) {
+        String code = getEmailVerifyCode(vo.getEmail());
+        if (code == null) return "请先获取验证码";
+        if(!code.equals(vo.getCode())) return "验证码错误，请重新输入";
+        this.deleteEmailVerifyCode(vo.getEmail());
+        Account account = this.findAccountByNameOrEmail(vo.getEmail());
+        if(account != null && account.getId() != id) return "该邮箱账号已经被其他账号绑定，无法完成操作";
+        this.update()
+                .set("email", vo.getEmail())
+                .eq("id", id)
+                .update();
+        return null;
     }
 }

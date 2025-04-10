@@ -10,6 +10,7 @@ import com.example.entity.vo.request.RenameNodeVO;
 import com.example.entity.vo.request.RuntimeDetailVO;
 import com.example.entity.vo.response.ClientDetailsVO;
 import com.example.entity.vo.response.ClientPreviewVO;
+import com.example.entity.vo.response.ClientSimpleVO;
 import com.example.entity.vo.response.RuntimeHistoryVO;
 import com.example.mapper.ClientDetailMapper;
 import com.example.mapper.ClientMapper;
@@ -166,6 +167,16 @@ public class ClientServiceImpl extends ServiceImpl<ClientMapper, Client> impleme
         detailMapper.deleteById(clientId);
         this.initClientCache();
         currentRuntime.remove(clientId);
+    }
+
+//获取一些基本信息 发给前端
+@Override
+public List<ClientSimpleVO> listSimpleList() {
+        return clientIdCache.values().stream().map(client -> {
+            ClientSimpleVO vo = client.asViewObject(ClientSimpleVO.class);
+            BeanUtils.copyProperties(detailMapper.selectById(vo.getId()), vo);
+            return vo;
+        }).toList();
     }
 
 
