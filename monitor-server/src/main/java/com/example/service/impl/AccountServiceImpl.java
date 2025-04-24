@@ -238,8 +238,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     //查询子用户
     @Override
     public List<SubAccountVO> listSubAccount() {
-        return this.list(Wrappers.<Account>query().eq("role", Const.ROLE_NORMAL))
-                .stream().map(account -> {
+        return this.list(Wrappers.<Account>query().eq("role", Const.ROLE_NORMAL)).stream()
+                .map(account -> {
                     SubAccountVO vo = account.asViewObject(SubAccountVO.class);
                     vo.setClientList(JSONArray.parse(account.getClients()));
                     return vo;

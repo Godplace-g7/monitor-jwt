@@ -5,6 +5,7 @@ import com.example.entity.dto.Account;
 import com.example.entity.vo.request.RenameClientVO;
 import com.example.entity.vo.request.RenameNodeVO;
 import com.example.entity.vo.request.RuntimeDetailVO;
+import com.example.entity.vo.request.SshConnectionVO;
 import com.example.entity.vo.response.*;
 import com.example.service.AccountService;
 import com.example.service.ClientService;
@@ -125,12 +126,36 @@ public class MonitorController {
         }
     }
 
+    @PostMapping("/ssh-save")
+    public RestBean<Void> saveSshConnection(@RequestBody @Valid SshConnectionVO vo,
+                                            @RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                            @RequestAttribute(Const.ATTR_USER_ROLE) String userRole) {
+        if(this.permissionCheck(userId, userRole, vo.getId())) {
+            service.saveClientSshConnection(vo);
+            return RestBean.success();
+        } else {
+            return RestBean.noPermission();
+        }
+    }
 
+    @GetMapping("/ssh")
+    public RestBean<SshSettingsVO> sshSettings(int clientId,
+                                               @RequestAttribute(Const.ATTR_USER_ID) int userId,
+                                               @RequestAttribute(Const.ATTR_USER_ROLE) String userRole) {
+        if(this.permissionCheck(userId, userRole, clientId)) {
+            return RestBean.success(service.sshSettings(clientId));
+        } else {
+            return RestBean.noPermission();
+        }
+    }
+
+    //仅展示当前账户所能展示的服务器
     private List<Integer> accountAccessClients(int uid) {
         Account account = accountService.getById(uid);
         return account.getClientList();
     }
 
+    //确认是否是管理员账户
     private boolean isAdminAccount(String role) {
         role = role.substring(5);
         return Const.ROLE_ADMIN.equals(role);

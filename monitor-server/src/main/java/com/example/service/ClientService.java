@@ -2,14 +2,8 @@ package com.example.service;
 
 import com.example.entity.dto.Client;
 import com.example.entity.dto.ClientDetail;
-import com.example.entity.vo.request.ClientDetailVO;
-import com.example.entity.vo.request.RenameClientVO;
-import com.example.entity.vo.request.RenameNodeVO;
-import com.example.entity.vo.request.RuntimeDetailVO;
-import com.example.entity.vo.response.ClientDetailsVO;
-import com.example.entity.vo.response.ClientPreviewVO;
-import com.example.entity.vo.response.ClientSimpleVO;
-import com.example.entity.vo.response.RuntimeHistoryVO;
+import com.example.entity.vo.request.*;
+import com.example.entity.vo.response.*;
 
 import java.util.List;
 
@@ -38,4 +32,11 @@ public interface ClientService {
 
     //获取一些基本信息 发给前端
     List<ClientSimpleVO> listSimpleList();
+
+
+    //保存ssh连接信息
+    void saveClientSshConnection(SshConnectionVO vo);
+
+    //获取ssh所有设置
+    SshSettingsVO sshSettings(int clientId);
 }

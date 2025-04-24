@@ -19,8 +19,8 @@ public final class Const {
     public final static int ORDER_FLOW_LIMIT = -101;
     public final static int ORDER_CORS = -102;
     //请求自定义属性
-    public final static String ATTR_USER_ID = "userId";
-    public final static String ATTR_USER_ROLE = "userRole";
+    public final static String ATTR_USER_ID = "userId";  //在注册的时候就将用户id存放进去 方便后续拿取
+    public final static String ATTR_USER_ROLE = "userRole"; //存放用户角色 admin、user
     public final static String ATTR_Client = "client";
     //消息队列
     public final static String MQ_MAIL = "mail";
