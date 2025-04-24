@@ -1,7 +1,6 @@
 package com.example.service;
 
 import com.example.entity.dto.Client;
-import com.example.entity.dto.ClientDetail;
 import com.example.entity.vo.request.*;
 import com.example.entity.vo.response.*;
 
